@@ -17,3 +17,7 @@ node_modules
 *.tsbuildinfo
 .tmp-*
 .eval-*
+.vercel
+.env
+.env*.local
+!.env.example
