@@ -10,5 +10,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
       images: [`${SITE_URL}/og-image.jpg`],
     },
+    {
+      url: `${SITE_URL}/commander`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
   ]
 }

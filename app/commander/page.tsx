@@ -1,0 +1,74 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { OrderForm } from '@/components/order-form'
+import { FloatingWhatsApp } from '@/components/floating-whatsapp'
+import { SiteHeader } from '@/components/site-header'
+import { dishes, formatFCFA } from '@/lib/site'
+
+export const metadata: Metadata = {
+  title: 'Commander — Saveur Béninoise',
+  description:
+    'Composez votre commande en 30 secondes : plat, quantité, adresse. Nous confirmons sur WhatsApp et livrons chaud à Cotonou.',
+  alternates: { canonical: '/commander' },
+  robots: { index: true, follow: true },
+}
+
+export default async function CommanderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plat?: string }>
+}) {
+  const { plat } = await searchParams
+  const initialDish = typeof plat === 'string' ? plat : ''
+  const featured = dishes.find((dish) => dish.name === initialDish) ?? dishes[0]
+
+  return (
+    <>
+      <SiteHeader />
+      <main className="relative overflow-hidden pb-24 pt-32 md:pt-40">
+        <div aria-hidden="true" className="absolute -right-32 top-10 -z-10 size-[30rem] rounded-full bg-primary/10 blur-[140px]" />
+        <div className="mx-auto max-w-5xl px-5 md:px-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Retour à l&apos;accueil
+          </Link>
+
+          <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:items-start">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">Commande en ligne</p>
+              <h1 className="mt-4 text-balance font-display text-4xl font-semibold tracking-tight md:text-5xl">
+                On prépare, vous <span className="italic text-primary">dégustez</span>.
+              </h1>
+              <p className="mt-5 max-w-md leading-relaxed text-muted-foreground">
+                Remplissez ce formulaire : votre commande est enregistrée, puis récapitulée automatiquement dans
+                WhatsApp pour confirmation. Livraison chaude en 30 minutes à Cotonou.
+              </p>
+
+              <div className="mt-8 rounded-3xl border border-white/[0.07] bg-card p-6 shadow-2xl shadow-black/40">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Votre sélection</p>
+                <p className="mt-3 font-display text-2xl font-semibold">{featured.name}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{featured.description}</p>
+                <p className="mt-4 font-display text-xl font-semibold text-primary">{formatFCFA(featured.price)}</p>
+              </div>
+
+              <p className="mt-6 text-sm text-muted-foreground">
+                Une question ? Appelez-nous au{' '}
+                <a href="tel:+2290199561144" className="font-semibold text-whatsapp hover:underline">
+                  +229 01 99 56 11 44
+                </a>
+                .
+              </p>
+            </div>
+
+            <OrderForm initialDish={initialDish} />
+          </div>
+        </div>
+      </main>
+      <FloatingWhatsApp />
+    </>
+  )
+}

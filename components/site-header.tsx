@@ -2,8 +2,9 @@
 
 import { motion, useMotionValueEvent, useScroll } from 'motion/react'
 import { useState } from 'react'
+import Link from 'next/link'
+import { ShoppingBag } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { WhatsAppButton } from './whatsapp-button'
 
 const links = [
   { href: '#menu', label: 'Menu' },
@@ -48,9 +49,13 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <WhatsAppButton size="sm" className="shadow-none">
+        <Link
+          href="/commander"
+          className="group inline-flex h-10 items-center justify-center gap-2 rounded-full bg-whatsapp px-4 text-sm font-semibold text-whatsapp-foreground shadow-[0_10px_40px_-8px] shadow-whatsapp/60 ring-1 ring-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-whatsapp/50"
+        >
+          <ShoppingBag className="size-4 shrink-0 transition-transform group-hover:scale-110" aria-hidden="true" />
           Commander
-        </WhatsAppButton>
+        </Link>
       </div>
     </motion.header>
   )

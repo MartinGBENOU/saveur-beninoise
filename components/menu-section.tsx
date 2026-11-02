@@ -1,9 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'motion/react'
 import { Plus } from 'lucide-react'
-import { dishes, formatFCFA, whatsappLink, type Dish } from '@/lib/site'
+import { dishes, formatFCFA, type Dish } from '@/lib/site'
 import { SectionHeading } from './section-heading'
 import { WhatsAppButton } from './whatsapp-button'
 
@@ -42,16 +43,14 @@ function DishCard({ dish, index }: { dish: Dish; index: number }) {
         </div>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{dish.description}</p>
 
-        <a
-          href={whatsappLink(`Bonjour Saveur Béninoise ! Je souhaite commander : ${dish.name} (${formatFCFA(dish.price)}).`)}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={`/commander?plat=${encodeURIComponent(dish.name)}`}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-3 text-sm font-semibold transition-all hover:border-whatsapp hover:bg-whatsapp hover:text-whatsapp-foreground"
-          aria-label={`Commander ce plat : ${dish.name} sur WhatsApp`}
+          aria-label={`Commander ce plat : ${dish.name}`}
         >
           <Plus className="size-4" aria-hidden="true" />
           Commander ce plat
-        </a>
+        </Link>
       </div>
     </motion.article>
   )
