@@ -1,6 +1,8 @@
 export const WHATSAPP_NUMBER = '2290199561144'
 export const WHATSAPP_DISPLAY = '+229 01 99 56 11 44'
 
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://saveur-beninoise.vercel.app'
+
 export function whatsappLink(message = 'Bonjour Saveur Béninoise ! Je souhaite passer une commande.') {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 }
@@ -18,39 +20,39 @@ export const dishes: Dish[] = [
     name: 'Poulet Braisé',
     description: 'Poulet bicyclette mariné 12h, grillé au feu de bois, oignons et piment frais.',
     price: 3500,
-    image: '/images/poulet-braise-unsplash.jpg',
+    image: '/images/poulet-braise.webp',
     tag: 'N°1 des ventes',
   },
   {
     name: 'Amiwo au Poulet',
     description: 'Pâte rouge de maïs parfumée à la tomate, poulet frit et sauce pimentée maison.',
     price: 3000,
-    image: '/images/amiwo.png',
+    image: '/images/amiwo.webp',
   },
   {
     name: 'Alloco & Poisson',
     description: 'Bananes plantains dorées, poisson grillé et notre sauce piment secrète.',
     price: 2500,
-    image: '/images/alloco-unsplash.jpg',
+    image: '/images/alloco.webp',
     tag: 'Coup de cœur',
   },
   {
     name: 'Pâte & Sauce Arachide',
     description: 'Pâte blanche onctueuse, sauce arachide mijotée au bœuf tendre.',
     price: 2500,
-    image: '/images/sauce-arachide.png',
+    image: '/images/sauce-arachide.webp',
   },
   {
     name: 'Brochettes de Bœuf',
     description: 'Bœuf épicé au kankankan, grillé à la braise, servi avec oignons crus.',
     price: 2000,
-    image: '/images/brochettes.png',
+    image: '/images/brochettes.webp',
   },
   {
     name: 'Poisson Braisé',
     description: 'Tilapia entier braisé, tomates fraîches, oignons et attiéké.',
     price: 4500,
-    image: '/images/poisson-braise-unsplash.jpg',
+    image: '/images/poisson-braise.webp',
     tag: 'Premium',
   },
 ]

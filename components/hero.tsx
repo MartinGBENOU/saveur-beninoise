@@ -18,7 +18,7 @@ export function Hero() {
     <section ref={ref} className="relative isolate flex min-h-svh items-end overflow-hidden pb-14 pt-32 md:items-center md:pb-24">
       <motion.div style={{ y: imageY, scale: imageScale }} className="absolute inset-0 -z-20">
         <Image
-          src="/images/hero.png"
+          src="/images/hero.webp"
           alt="Assortiment de street food béninoise : poulet braisé, alloco et sauces pimentées"
           fill
           priority

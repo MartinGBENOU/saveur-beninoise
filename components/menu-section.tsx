@@ -47,7 +47,7 @@ function DishCard({ dish, index }: { dish: Dish; index: number }) {
           target="_blank"
           rel="noopener noreferrer"
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-3 text-sm font-semibold transition-all hover:border-whatsapp hover:bg-whatsapp hover:text-whatsapp-foreground"
-          aria-label={`Commander ${dish.name} sur WhatsApp`}
+          aria-label={`Commander ce plat : ${dish.name} sur WhatsApp`}
         >
           <Plus className="size-4" aria-hidden="true" />
           Commander ce plat
