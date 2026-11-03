@@ -30,18 +30,21 @@ export function SiteHeader({ content }: { content: SiteContent }) {
     const hash = window.location.hash.slice(1)
     if (!hash) return
 
-    const timer = window.setTimeout(() => {
-      document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ block: 'start' })
-    }, 150)
+    const scroll = () => {
+      const element = document.getElementById(decodeURIComponent(hash))
+      if (element) element.scrollIntoView({ block: 'start', behavior: 'instant' })
+    }
 
-    return () => window.clearTimeout(timer)
+    const timers = [120, 500, 1000].map((delay) => window.setTimeout(scroll, delay))
+    return () => timers.forEach((timer) => window.clearTimeout(timer))
   }, [pathname])
 
   function scrollToSection(event: MouseEvent<HTMLAnchorElement>, id: string) {
     // Sur l'accueil, on défile directement sans recharger la page.
     if (pathname !== '/') return
     event.preventDefault()
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const element = document.getElementById(id)
+    if (element) element.scrollIntoView({ block: 'start', behavior: 'instant' })
     window.history.replaceState(null, '', `#${id}`)
   }
 
