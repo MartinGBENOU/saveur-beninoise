@@ -1,8 +1,9 @@
 'use client'
 
 import { motion, useMotionValueEvent, useScroll } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { ShoppingBag } from 'lucide-react'
 import type { SiteContent } from '@/lib/content'
 import { cn } from '@/lib/utils'
@@ -12,11 +13,37 @@ export function SiteHeader({ content }: { content: SiteContent }) {
   const [scrolled, setScrolled] = useState(false)
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 24))
 
-  const links = [
-    { href: '#menu', label: content['nav.menu'] },
-    { href: '#avis', label: content['nav.reviews'] },
-    { href: '#infos', label: content['nav.infos'] },
+  // Sur /commander, les sections menu/avis/infos sont sur l'accueil :
+  // on préfixe les ancres par « / » pour y retourner en scrollant.
+  const pathname = usePathname()
+  const homeHref = pathname === '/' ? '' : '/'
+
+  const sections = [
+    { id: 'menu', label: content['nav.menu'] },
+    { id: 'avis', label: content['nav.reviews'] },
+    { id: 'infos', label: content['nav.infos'] },
   ]
+
+  // Après une arrivée sur « /#avis » (ou un rechargement), Next remet parfois
+  // le scroll en haut : on replace la section demandée sous l'en-tête.
+  useEffect(() => {
+    const hash = window.location.hash.slice(1)
+    if (!hash) return
+
+    const timer = window.setTimeout(() => {
+      document.getElementById(decodeURIComponent(hash))?.scrollIntoView({ block: 'start' })
+    }, 150)
+
+    return () => window.clearTimeout(timer)
+  }, [pathname])
+
+  function scrollToSection(event: MouseEvent<HTMLAnchorElement>, id: string) {
+    // Sur l'accueil, on défile directement sans recharger la page.
+    if (pathname !== '/') return
+    event.preventDefault()
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.history.replaceState(null, '', `#${id}`)
+  }
 
   return (
     <motion.header
@@ -33,20 +60,25 @@ export function SiteHeader({ content }: { content: SiteContent }) {
             : 'border-transparent bg-transparent',
         )}
       >
-        <a href="#" className="flex items-center gap-2" aria-label="Saveur Béninoise, accueil">
+        <Link href="/" className="flex items-center gap-2" aria-label="Saveur Béninoise, accueil">
           <span className="grid size-8 place-items-center rounded-full bg-primary font-display text-sm font-bold text-primary-foreground">
             S
           </span>
           <span className="whitespace-nowrap font-display text-base font-semibold tracking-tight sm:text-lg">
             Saveur <span className="text-primary">Béninoise</span>
           </span>
-        </a>
+        </Link>
 
         <nav aria-label="Navigation principale" className="hidden items-center gap-8 md:flex">
-          {links.map((l) => (
-            <a key={l.href} href={l.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              {l.label}
-            </a>
+          {sections.map((section) => (
+            <Link
+              key={section.id}
+              href={`${homeHref}#${section.id}`}
+              onClick={(event) => scrollToSection(event, section.id)}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {section.label}
+            </Link>
           ))}
         </nav>
 
