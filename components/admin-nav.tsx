@@ -3,9 +3,13 @@ import Link from 'next/link'
 const links = [
   { href: '/admin', label: 'Commandes', key: 'orders' },
   { href: '/admin/menu', label: 'Carte du menu', key: 'menu' },
+  { href: '/admin/avis', label: 'Avis clients', key: 'reviews' },
+  { href: '/admin/texte', label: 'Textes du site', key: 'content' },
 ] as const
 
-export function AdminNav({ current }: { current: 'orders' | 'menu' }) {
+export type AdminSection = (typeof links)[number]['key']
+
+export function AdminNav({ current }: { current: AdminSection }) {
   return (
     <nav aria-label="Sections de l’espace admin" className="flex flex-wrap gap-2">
       {links.map((link) => {

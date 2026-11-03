@@ -2,17 +2,16 @@
 
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react'
 import { useState } from 'react'
-import { whatsappLink } from '@/lib/site'
 import { WhatsAppIcon } from './whatsapp-icon'
 
-export function FloatingWhatsApp() {
+export function FloatingWhatsApp({ href, label = 'Commander' }: { href: string; label?: string }) {
   const { scrollY } = useScroll()
   const [expanded, setExpanded] = useState(true)
   useMotionValueEvent(scrollY, 'change', (y) => setExpanded(y < 400))
 
   return (
     <motion.a
-      href={whatsappLink()}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Commander sur WhatsApp"
@@ -34,7 +33,7 @@ export function FloatingWhatsApp() {
             transition={{ duration: 0.3 }}
             className="overflow-hidden whitespace-nowrap pr-1 font-semibold"
           >
-            Commander
+            {label}
           </motion.span>
         )}
       </AnimatePresence>

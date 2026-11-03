@@ -1,4 +1,5 @@
-import { SITE_URL, WHATSAPP_NUMBER } from '@/lib/site'
+import { SITE_URL } from '@/lib/site'
+import { whatsappNumber, type SiteContent } from '@/lib/content'
 import type { MenuDish } from '@/lib/menu'
 
 const openingHours = [
@@ -27,7 +28,7 @@ const menuItems = (dishes: MenuDish[]) =>
     '@type': 'MenuItem',
     name: dish.name,
     description: dish.description,
-    image: `${SITE_URL}${dish.image}`,
+    image: /^https?:\/\//.test(dish.image) ? dish.image : `${SITE_URL}${dish.image}`,
     offers: {
       '@type': 'Offer',
       price: String(dish.price),
@@ -35,25 +36,26 @@ const menuItems = (dishes: MenuDish[]) =>
     },
   }))
 
-export function StructuredData({ dishes }: { dishes: MenuDish[] }) {
+export function StructuredData({ dishes, content }: { dishes: MenuDish[]; content: SiteContent }) {
+  const city = content['contact.addressLine2'].split(',')[0]?.trim() || 'Cotonou'
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
     name: 'Saveur Béninoise',
-    description:
-      'Street food béninoise authentique : poulet braisé, amiwo, alloco, brochettes et poisson braisé, préparés à la braise et livrés chauds à Cotonou.',
+    description: content['seo.description'],
     url: SITE_URL,
     image: `${SITE_URL}/og-image.jpg`,
     logo: `${SITE_URL}/icon.svg`,
-    telephone: `+${WHATSAPP_NUMBER}`,
+    telephone: `+${whatsappNumber(content)}`,
     priceRange: '2000-4500 FCFA',
     currenciesAccepted: 'XOF',
     paymentAccepted: 'Espèces, Mobile Money',
     servesCuisine: ['Béninoise', 'Africaine', 'Street food'],
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Rue 12.054, Haie Vive',
-      addressLocality: 'Cotonou',
+      streetAddress: content['contact.addressLine1'],
+      addressLocality: city,
       addressCountry: 'BJ',
     },
     areaServed: {
@@ -67,7 +69,7 @@ export function StructuredData({ dishes }: { dishes: MenuDish[] }) {
       url: `${SITE_URL}/#menu`,
       hasMenuSection: {
         '@type': 'MenuSection',
-        name: 'Nos best-sellers',
+        name: content['menu.eyebrow'],
         hasMenuItem: menuItems(dishes),
       },
     },

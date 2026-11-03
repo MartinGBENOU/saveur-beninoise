@@ -51,3 +51,49 @@ export const dishes = pgTable(
 
 export type DishRow = typeof dishes.$inferSelect
 export type NewDishRow = typeof dishes.$inferInsert
+
+/**
+ * Textes du site (clé → valeur). Les clés et les valeurs par défaut vivent dans lib/content.ts.
+ * Seules les valeurs modifiées depuis /admin/texte sont stockées ici.
+ */
+export const settings = pgTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type SettingRow = typeof settings.$inferSelect
+
+/**
+ * Avis clients. Un avis envoyé depuis le site est enregistré avec `approved = false`
+ * et n'apparaît qu'après validation dans /admin/avis.
+ */
+export const testimonials = pgTable(
+  'testimonials',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    location: text('location'),
+    rating: integer('rating').notNull().default(5),
+    quote: text('quote').notNull(),
+    approved: boolean('approved').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('testimonials_approved_created_idx').on(table.approved, table.createdAt)],
+)
+
+export type TestimonialRow = typeof testimonials.$inferSelect
+export type NewTestimonialRow = typeof testimonials.$inferInsert
+
+/**
+ * Photos de plats envoyées depuis l'admin, stockées en base (base64) pour éviter
+ * un service de stockage externe. Servies par /api/uploads/[id].
+ */
+export const uploads = pgTable('uploads', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  mime: text('mime').notNull(),
+  data: text('data').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type UploadRow = typeof uploads.$inferSelect

@@ -4,18 +4,19 @@ import { motion, useMotionValueEvent, useScroll } from 'motion/react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { ShoppingBag } from 'lucide-react'
+import type { SiteContent } from '@/lib/content'
 import { cn } from '@/lib/utils'
 
-const links = [
-  { href: '#menu', label: 'Menu' },
-  { href: '#avis', label: 'Avis' },
-  { href: '#infos', label: 'Infos' },
-]
-
-export function SiteHeader() {
+export function SiteHeader({ content }: { content: SiteContent }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 24))
+
+  const links = [
+    { href: '#menu', label: content['nav.menu'] },
+    { href: '#avis', label: content['nav.reviews'] },
+    { href: '#infos', label: content['nav.infos'] },
+  ]
 
   return (
     <motion.header
@@ -54,7 +55,7 @@ export function SiteHeader() {
           className="group inline-flex h-10 items-center justify-center gap-2 rounded-full bg-whatsapp px-4 text-sm font-semibold text-whatsapp-foreground shadow-[0_10px_40px_-8px] shadow-whatsapp/60 ring-1 ring-white/20 transition-all duration-300 hover:-translate-y-0.5 hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-whatsapp/50"
         >
           <ShoppingBag className="size-4 shrink-0 transition-transform group-hover:scale-110" aria-hidden="true" />
-          Commander
+          {content['nav.order']}
         </Link>
       </div>
     </motion.header>

@@ -4,12 +4,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { Plus } from 'lucide-react'
+import { applyPlaceholders, whatsappLinkFor, type SiteContent } from '@/lib/content'
 import { formatFCFA } from '@/lib/site'
 import type { MenuDish } from '@/lib/menu'
+import { RichText } from './rich-text'
 import { SectionHeading } from './section-heading'
 import { WhatsAppButton } from './whatsapp-button'
 
-function DishCard({ dish, index }: { dish: MenuDish; index: number }) {
+function DishCard({ dish, index, cta }: { dish: MenuDish; index: number; cta: string }) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 40 }}
@@ -47,21 +49,18 @@ function DishCard({ dish, index }: { dish: MenuDish; index: number }) {
         <Link
           href={`/commander?plat=${encodeURIComponent(dish.slug)}`}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-3 text-sm font-semibold transition-all hover:border-whatsapp hover:bg-whatsapp hover:text-whatsapp-foreground"
-          aria-label={`Commander ce plat : ${dish.name}`}
+          aria-label={`${cta} : ${dish.name}`}
         >
           <Plus className="size-4" aria-hidden="true" />
-          Commander ce plat
+          {cta}
         </Link>
       </div>
     </motion.article>
   )
 }
 
-export function MenuSection({ dishes }: { dishes: MenuDish[] }) {
-  const description =
-    dishes.length > 1
-      ? `${dishes.length} recettes signatures, préparées chaque jour avec des produits frais du marché Dantokpa.`
-      : 'Nos recettes signatures, préparées chaque jour avec des produits frais du marché Dantokpa.'
+export function MenuSection({ dishes, content }: { dishes: MenuDish[]; content: SiteContent }) {
+  const description = applyPlaceholders(content['menu.description'], { nombre: String(dishes.length) })
 
   return (
     <section id="menu" aria-labelledby="menu-title" className="relative scroll-mt-24 py-24 md:py-32">
@@ -72,24 +71,19 @@ export function MenuSection({ dishes }: { dishes: MenuDish[] }) {
       <div className="mx-auto max-w-6xl px-5 md:px-8">
         <SectionHeading
           id="menu-title"
-          eyebrow="Nos best-sellers"
-          title={
-            <>
-              Les plats qu&apos;on <span className="italic text-primary">s&apos;arrache</span>
-            </>
-          }
+          eyebrow={content['menu.eyebrow']}
+          title={<RichText text={content['menu.title']} />}
           description={description}
         />
 
         {dishes.length === 0 ? (
           <p className="mx-auto max-w-xl rounded-3xl border border-white/[0.07] bg-card px-6 py-10 text-center text-muted-foreground">
-            La carte est en cours de mise à jour. Écrivez-nous sur WhatsApp, nous vous disons ce qui est disponible
-            aujourd&apos;hui.
+            {content['menu.empty']}
           </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {dishes.map((dish, i) => (
-              <DishCard key={dish.slug} dish={dish} index={i} />
+              <DishCard key={dish.slug} dish={dish} index={i} cta={content['menu.cta']} />
             ))}
           </div>
         )}
@@ -101,8 +95,8 @@ export function MenuSection({ dishes }: { dishes: MenuDish[] }) {
           transition={{ duration: 0.7 }}
           className="mt-14 flex flex-col items-center gap-3 text-center"
         >
-          <WhatsAppButton />
-          <p className="text-sm text-muted-foreground">Livraison offerte dès 10 000 F · Paiement à la livraison ou MoMo</p>
+          <WhatsAppButton href={whatsappLinkFor(content)} />
+          <p className="text-sm text-muted-foreground">{content['menu.note']}</p>
         </motion.div>
       </div>
     </section>

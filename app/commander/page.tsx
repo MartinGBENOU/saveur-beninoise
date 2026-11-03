@@ -3,9 +3,12 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { OrderForm } from '@/components/order-form'
 import { FloatingWhatsApp } from '@/components/floating-whatsapp'
+import { RichText } from '@/components/rich-text'
 import { SiteHeader } from '@/components/site-header'
+import { whatsappLinkFor } from '@/lib/content'
+import { getContent } from '@/lib/content-server'
 import { getMenu } from '@/lib/menu'
-import { formatFCFA, whatsappLink } from '@/lib/site'
+import { formatFCFA } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Commander — Saveur Béninoise',
@@ -21,7 +24,7 @@ export default async function CommanderPage({
   searchParams: Promise<{ plat?: string }>
 }) {
   const { plat } = await searchParams
-  const menu = await getMenu()
+  const [menu, content] = await Promise.all([getMenu(), getContent()])
 
   const requested = typeof plat === 'string' ? plat : ''
   const featured = menu.find((dish) => dish.slug === requested) ?? menu[0]
@@ -29,7 +32,7 @@ export default async function CommanderPage({
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader content={content} />
       <main className="relative overflow-hidden pb-24 pt-32 md:pt-40">
         <div aria-hidden="true" className="absolute -right-32 top-10 -z-10 size-[30rem] rounded-full bg-primary/10 blur-[140px]" />
         <div className="mx-auto max-w-5xl px-5 md:px-8">
@@ -43,14 +46,11 @@ export default async function CommanderPage({
 
           <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_1.15fr] lg:items-start">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">Commande en ligne</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">{content['order.eyebrow']}</p>
               <h1 className="mt-4 text-balance font-display text-4xl font-semibold tracking-tight md:text-5xl">
-                On prépare, vous <span className="italic text-primary">dégustez</span>.
+                <RichText text={content['order.title']} />
               </h1>
-              <p className="mt-5 max-w-md leading-relaxed text-muted-foreground">
-                Remplissez ce formulaire : votre commande est enregistrée, puis récapitulée automatiquement dans
-                WhatsApp pour confirmation. Livraison chaude en 30 minutes à Cotonou.
-              </p>
+              <p className="mt-5 max-w-md leading-relaxed text-muted-foreground">{content['order.description']}</p>
 
               {featured && (
                 <div className="mt-8 rounded-3xl border border-white/[0.07] bg-card p-6 shadow-2xl shadow-black/40">
@@ -63,24 +63,21 @@ export default async function CommanderPage({
 
               <p className="mt-6 text-sm text-muted-foreground">
                 Une question ? Appelez-nous au{' '}
-                <a href="tel:+2290199561144" className="font-semibold text-whatsapp hover:underline">
-                  +229 01 99 56 11 44
+                <a href={`tel:+${content['contact.phoneNumber'].replace(/[^0-9]/g, '')}`} className="font-semibold text-whatsapp hover:underline">
+                  {content['contact.phoneDisplay']}
                 </a>
                 .
               </p>
             </div>
 
             {menu.length > 0 ? (
-              <OrderForm dishes={menu} initialDish={initialDish} />
+              <OrderForm dishes={menu} initialDish={initialDish} content={content} />
             ) : (
               <div className="rounded-[2rem] border border-white/[0.07] bg-card p-8 text-center shadow-2xl shadow-black/40">
                 <p className="font-display text-2xl font-semibold">La carte est en cours de mise à jour</p>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Nous préparons de nouvelles recettes. Écrivez-nous sur WhatsApp : nous vous indiquons tout de suite
-                  ce qui est disponible aujourd&apos;hui.
-                </p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{content['menu.empty']}</p>
                 <a
-                  href={whatsappLink()}
+                  href={whatsappLinkFor(content)}
                   className="mt-6 inline-flex items-center justify-center rounded-full bg-whatsapp px-6 py-3 text-sm font-semibold text-whatsapp-foreground transition-transform hover:-translate-y-0.5"
                 >
                   Nous écrire sur WhatsApp
@@ -90,7 +87,7 @@ export default async function CommanderPage({
           </div>
         </div>
       </main>
-      <FloatingWhatsApp />
+      <FloatingWhatsApp href={whatsappLinkFor(content)} label={content['nav.order']} />
     </>
   )
 }

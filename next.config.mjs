@@ -3,6 +3,10 @@ const nextConfig = {
   poweredByHeader: false,
   experimental: {
     agentUpgrade: 'security',
+    // Photos de plats envoyées depuis /admin/menu (compressées sous 1 Mo avant envoi).
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
   },
   images: {
     formats: ['image/avif', 'image/webp'],

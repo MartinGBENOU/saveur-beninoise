@@ -1,10 +1,12 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { whatsappLinkFor } from '@/lib/content'
+import { getContent } from '@/lib/content-server'
 import { getDb } from '@/lib/db'
 import { getDishBySlug } from '@/lib/menu'
 import { orders } from '@/lib/schema'
-import { formatFCFA, whatsappLink } from '@/lib/site'
+import { formatFCFA } from '@/lib/site'
 
 const PHONE_PATTERN = /^\+?[0-9][0-9\s.-]{6,19}$/
 
@@ -79,5 +81,5 @@ export async function createOrder(_previousState: { error: string } | null, form
     reference ? `Réf. commande : ${reference}` : null,
   ].filter((line): line is string => line !== null)
 
-  redirect(whatsappLink(lines.join('\n')))
+  redirect(whatsappLinkFor(await getContent(), lines.join('\n')))
 }

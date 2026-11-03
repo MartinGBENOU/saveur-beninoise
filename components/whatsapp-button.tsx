@@ -3,16 +3,23 @@ import { whatsappLink } from '@/lib/site'
 import { WhatsAppIcon } from './whatsapp-icon'
 
 type Props = {
+  href?: string
   message?: string
   size?: 'sm' | 'lg'
   className?: string
   children?: React.ReactNode
 }
 
-export function WhatsAppButton({ message, size = 'lg', className, children = 'Commander sur WhatsApp' }: Props) {
+export function WhatsAppButton({
+  href,
+  message,
+  size = 'lg',
+  className,
+  children = 'Commander sur WhatsApp',
+}: Props) {
   return (
     <a
-      href={whatsappLink(message)}
+      href={href ?? whatsappLink(message)}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(

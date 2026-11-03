@@ -8,6 +8,7 @@ import { getDb, isDatabaseConfigured } from '@/lib/db'
 import { DISH_IMAGES } from '@/lib/menu'
 import { dishes } from '@/lib/schema'
 import { defaultDishes } from '@/lib/site'
+import { deleteUploadByPath, isUploadPath, saveUpload, UploadError } from '@/lib/uploads'
 
 const MIN_PRICE = 100
 const MAX_PRICE = 100_000
@@ -62,12 +63,17 @@ async function uniqueSlug(base: string) {
   return `${base}-${suffix}`
 }
 
-function parseDishInput(formData: FormData) {
+/**
+ * Valide les champs du plat et détermine sa photo :
+ * une nouvelle photo envoyée (data URL) est enregistrée en base et remplace la précédente.
+ */
+async function parseDishInput(formData: FormData, previousImage?: string) {
   const name = readText(formData, 'name')
   const description = readText(formData, 'description')
   const price = Number.parseInt(readText(formData, 'price'), 10)
-  const image = readText(formData, 'image')
   const tag = readText(formData, 'tag')
+  const photoData = readText(formData, 'photoData')
+  let image = readText(formData, 'image')
 
   if (name.length < 2 || name.length > 80) {
     sendMessage('Le nom du plat doit contenir entre 2 et 80 caractères.')
@@ -78,11 +84,27 @@ function parseDishInput(formData: FormData) {
   if (!Number.isInteger(price) || price < MIN_PRICE || price > MAX_PRICE) {
     sendMessage(`Le prix doit être un nombre entre ${MIN_PRICE} et ${MAX_PRICE.toLocaleString('fr-FR')} F.`)
   }
-  if (!DISH_IMAGES.some((option) => option.value === image)) {
-    sendMessage('Choisissez une photo dans la liste proposée.')
-  }
   if (tag.length > 40) {
     sendMessage('Le badge est limité à 40 caractères.')
+  }
+
+  if (photoData) {
+    try {
+      image = await saveUpload(photoData)
+    } catch (error) {
+      if (error instanceof UploadError) {
+        sendMessage(error.message)
+      }
+      console.error('[uploads] enregistrement de la photo impossible :', error)
+      sendMessage("La photo n'a pas pu être enregistrée. Réessayez dans un instant.")
+    }
+  }
+
+  const knownImage =
+    DISH_IMAGES.some((option) => option.value === image) || (previousImage !== undefined && image === previousImage)
+
+  if (!image || (!knownImage && !isUploadPath(image))) {
+    sendMessage('Choisissez une photo pour ce plat.')
   }
 
   return { name, description, price, image, tag: tag || null }
@@ -92,7 +114,7 @@ export async function createDish(formData: FormData) {
   await assertAdmin()
   assertDatabase()
 
-  const input = parseDishInput(formData)
+  const input = await parseDishInput(formData)
   const available = formData.get('available') !== null
 
   try {
@@ -117,7 +139,22 @@ export async function updateDish(formData: FormData) {
   const slug = readText(formData, 'slug')
   if (!slug) sendMessage('Plat introuvable.')
 
-  const input = parseDishInput(formData)
+  let previousImage: string | null = null
+  try {
+    const [row] = await getDb()
+      .select({ image: dishes.image })
+      .from(dishes)
+      .where(eq(dishes.slug, slug))
+      .limit(1)
+    previousImage = row?.image ?? null
+  } catch (error) {
+    console.error('[admin] lecture du plat impossible :', error)
+    sendMessage('Impossible de retrouver ce plat. Réessayez dans un instant.')
+  }
+
+  if (!previousImage) sendMessage('Plat introuvable.')
+
+  const input = await parseDishInput(formData, previousImage ?? undefined)
   const available = formData.get('available') !== null
 
   try {
@@ -128,6 +165,10 @@ export async function updateDish(formData: FormData) {
   } catch (error) {
     console.error('[admin] mise à jour d’un plat impossible :', error)
     sendMessage("Impossible d'enregistrer les modifications. Réessayez dans un instant.")
+  }
+
+  if (previousImage && previousImage !== input.image) {
+    await deleteUploadByPath(previousImage)
   }
 
   revalidateMenu()
@@ -142,12 +183,23 @@ export async function deleteDish(formData: FormData) {
   const name = readText(formData, 'name')
   if (!slug) sendMessage('Plat introuvable.')
 
+  let image: string | null = null
+
   try {
+    const [row] = await getDb()
+      .select({ image: dishes.image })
+      .from(dishes)
+      .where(eq(dishes.slug, slug))
+      .limit(1)
+    image = row?.image ?? null
+
     await getDb().delete(dishes).where(eq(dishes.slug, slug))
   } catch (error) {
     console.error('[admin] suppression d’un plat impossible :', error)
     sendMessage('Impossible de supprimer ce plat. Réessayez dans un instant.')
   }
+
+  await deleteUploadByPath(image)
 
   revalidateMenu()
   sendMessage(`« ${name} » a été retiré de la carte.`, 'ok')

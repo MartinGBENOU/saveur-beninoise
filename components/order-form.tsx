@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react'
 import { Loader2, ShoppingBag } from 'lucide-react'
 import { createOrder } from '@/app/commander/actions'
+import type { SiteContent } from '@/lib/content'
 import type { MenuDish } from '@/lib/menu'
 import { formatFCFA } from '@/lib/site'
 
@@ -11,7 +12,15 @@ const fieldClass =
 
 const labelClass = 'block text-sm font-medium text-muted-foreground'
 
-export function OrderForm({ dishes, initialDish }: { dishes: MenuDish[]; initialDish: string }) {
+export function OrderForm({
+  dishes,
+  initialDish,
+  content,
+}: {
+  dishes: MenuDish[]
+  initialDish: string
+  content: SiteContent
+}) {
   const [state, formAction, pending] = useActionState(createOrder, null)
   const [dishSlug, setDishSlug] = useState(
     dishes.some((dish) => dish.slug === initialDish) ? initialDish : (dishes[0]?.slug ?? ''),
@@ -154,14 +163,12 @@ export function OrderForm({ dishes, initialDish }: { dishes: MenuDish[]; initial
         ) : (
           <>
             <ShoppingBag className="size-5" aria-hidden="true" />
-            Valider et envoyer sur WhatsApp
+            {content['order.submit']}
           </>
         )}
       </button>
 
-      <p className="mt-4 text-center text-sm text-muted-foreground">
-        Votre commande est enregistrée, puis récapitulée dans WhatsApp. Livraison offerte dès 10 000 F.
-      </p>
+      <p className="mt-4 text-center text-sm text-muted-foreground">{content['order.note']}</p>
     </form>
   )
 }

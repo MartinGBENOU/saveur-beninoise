@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, LogOut, Plus, Save, Trash2 } from 'lucide-react'
 import { AdminLogin } from '@/components/admin-login'
 import { AdminNav } from '@/components/admin-nav'
 import { ConfirmSubmit } from '@/components/confirm-submit'
+import { PhotoInput } from '@/components/photo-input'
 import { logout } from '@/app/admin/actions'
 import {
   createDish,
@@ -36,15 +37,8 @@ const primaryButtonClass =
 const ghostButtonClass =
   'inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30'
 
-function imageOptionsFor(image: string) {
-  return DISH_IMAGES.some((option) => option.value === image)
-    ? DISH_IMAGES
-    : [{ value: image, label: 'Photo actuelle' }, ...DISH_IMAGES]
-}
-
 function DishFields({ dish }: { dish?: MenuDish }) {
   const prefix = dish?.slug ?? 'nouveau'
-  const imageOptions = imageOptionsFor(dish?.image ?? DISH_IMAGES[0].value)
 
   return (
     <>
@@ -115,23 +109,7 @@ function DishFields({ dish }: { dish?: MenuDish }) {
         />
       </div>
 
-      <div>
-        <label htmlFor={`${prefix}-image`} className={labelClass}>
-          Photo
-        </label>
-        <select
-          id={`${prefix}-image`}
-          name="image"
-          defaultValue={dish?.image ?? DISH_IMAGES[0].value}
-          className={fieldClass}
-        >
-          {imageOptions.map((option) => (
-            <option key={option.value} value={option.value} className="bg-card text-foreground">
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <PhotoInput options={DISH_IMAGES} defaultImage={dish?.image} />
 
       <label className="flex items-center gap-2.5 text-sm sm:col-span-2">
         <input
@@ -232,7 +210,11 @@ export default async function AdminMenuPage({
             <span className="ml-auto text-xs font-normal text-muted-foreground group-open:hidden">Ouvrir</span>
           </summary>
 
-          <form action={createDish} className="grid gap-4 border-t border-white/[0.07] p-5 sm:grid-cols-2">
+          <form
+            action={createDish}
+            encType="multipart/form-data"
+            className="grid gap-4 border-t border-white/[0.07] p-5 sm:grid-cols-2"
+          >
             <DishFields />
             <div className="sm:col-span-2">
               <button type="submit" className={primaryButtonClass}>
@@ -308,7 +290,7 @@ export default async function AdminMenuPage({
                 </summary>
 
                 <div className="border-t border-white/[0.07] p-4">
-                  <form action={updateDish} className="grid gap-4 sm:grid-cols-2">
+                  <form action={updateDish} encType="multipart/form-data" className="grid gap-4 sm:grid-cols-2">
                     <input type="hidden" name="slug" value={dish.slug} />
                     <DishFields dish={dish} />
                     <div className="sm:col-span-2">
@@ -368,8 +350,9 @@ export default async function AdminMenuPage({
       </section>
 
       <p className="mt-8 text-xs leading-relaxed text-muted-foreground">
-        Les photos proposées sont celles du site. Pour utiliser une nouvelle photo, envoyez-la nous : nous
-        l&apos;optimiserons et l&apos;ajouterons à la liste.
+        Vous pouvez envoyer la photo de votre choix depuis votre téléphone ou votre ordinateur : elle est réduite
+        automatiquement (1400 px, WebP) puis enregistrée avec le plat. Les anciennes photos envoyées sont supprimées
+        lorsque vous les remplacez.
       </p>
     </main>
   )
