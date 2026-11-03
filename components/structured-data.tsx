@@ -1,4 +1,5 @@
-import { dishes, SITE_URL, WHATSAPP_NUMBER } from '@/lib/site'
+import { SITE_URL, WHATSAPP_NUMBER } from '@/lib/site'
+import type { MenuDish } from '@/lib/menu'
 
 const openingHours = [
   {
@@ -21,19 +22,20 @@ const openingHours = [
   },
 ]
 
-const menuItems = dishes.map((dish) => ({
-  '@type': 'MenuItem',
-  name: dish.name,
-  description: dish.description,
-  image: `${SITE_URL}${dish.image}`,
-  offers: {
-    '@type': 'Offer',
-    price: String(dish.price),
-    priceCurrency: 'XOF',
-  },
-}))
+const menuItems = (dishes: MenuDish[]) =>
+  dishes.map((dish) => ({
+    '@type': 'MenuItem',
+    name: dish.name,
+    description: dish.description,
+    image: `${SITE_URL}${dish.image}`,
+    offers: {
+      '@type': 'Offer',
+      price: String(dish.price),
+      priceCurrency: 'XOF',
+    },
+  }))
 
-export function StructuredData() {
+export function StructuredData({ dishes }: { dishes: MenuDish[] }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
@@ -66,7 +68,7 @@ export function StructuredData() {
       hasMenuSection: {
         '@type': 'MenuSection',
         name: 'Nos best-sellers',
-        hasMenuItem: menuItems,
+        hasMenuItem: menuItems(dishes),
       },
     },
   }

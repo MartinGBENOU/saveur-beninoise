@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { desc } from 'drizzle-orm'
 import { LogOut } from 'lucide-react'
 import { AdminLogin } from '@/components/admin-login'
+import { AdminNav } from '@/components/admin-nav'
 import { logout, updateOrderStatus } from '@/app/admin/actions'
 import { isAdminAuthenticated, isAdminConfigured } from '@/lib/admin-auth'
 import { getDb, isDatabaseConfigured } from '@/lib/db'
@@ -78,6 +79,10 @@ export default async function AdminPage() {
           </button>
         </form>
       </header>
+
+      <div className="mt-6">
+        <AdminNav current="orders" />
+      </div>
 
       {!databaseReady && (
         <p className="mt-8 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-5 py-4 text-sm text-amber-200">

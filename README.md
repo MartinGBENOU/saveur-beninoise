@@ -5,10 +5,12 @@ Site en production : <https://saveur-beninoise.vercel.app>
 
 ## Ce que fait le site
 
-- **Accueil** : présentation, menu des 6 plats, avis clients, horaires, carte.
+- **Accueil** : présentation, carte du restaurant, avis clients, horaires.
 - **`/commander`** : formulaire de commande (plat, quantité, nom, téléphone, adresse).
   La commande est **enregistrée en base**, puis **récapitulée automatiquement dans WhatsApp**.
 - **`/admin`** : liste des commandes reçues, protégée par mot de passe.
+- **`/admin/menu`** : gestion de la carte (nom, description, prix, photo, badge, disponibilité, ordre).
+  Les changements sont visibles immédiatement sur le site.
 - Partage WhatsApp / réseaux sociaux (image `og-image.jpg`), `robots.txt`, `sitemap.xml`, données structurées `Restaurant`.
 
 ## Stack
@@ -51,10 +53,10 @@ Vercel ajoute alors `DATABASE_URL` au projet.
 vercel env pull .env.local
 ```
 
-### 3. Créer la table `orders`
+### 3. Créer les tables
 
 ```bash
-corepack pnpm db:migrate   # applique drizzle/0000_*.sql
+corepack pnpm db:migrate   # applique drizzle/0000_*.sql (orders) puis 0001_*.sql (dishes + menu de départ)
 ```
 
 Autres commandes utiles :
@@ -64,23 +66,31 @@ corepack pnpm db:generate  # génère une migration après modification de lib/s
 corepack pnpm db:studio    # explorateur de base de données
 ```
 
-### 4. Activer l'espace commandes
+### 4. Activer l'espace d'administration
 
 Ajouter `ADMIN_PASSWORD` dans les variables d'environnement Vercel, puis redéployer.
-La page `/admin` permet de suivre les commandes (nouvelle → confirmée → livrée / annulée).
+
+- `/admin` : suivre les commandes (nouvelle → confirmée → livrée / annulée).
+- `/admin/menu` : modifier la carte. Un plat décoché « Disponible » disparaît du site public et
+  ne peut plus être commandé. Les photos proposées sont celles de `public/images`.
+
+Le menu de secours (`lib/site.ts`) est utilisé si la base est vide ou injoignable ; il sert aussi
+de source pour « Restaurer le menu de départ » quand la carte est vide.
 
 ## Structure utile
 
 ```
 app/
-  page.tsx              accueil
+  page.tsx              accueil (carte lue en base, revalidation à la demande)
   commander/            formulaire + Server Action createOrder
   admin/                tableau de bord des commandes
+  admin/menu/           gestion de la carte (Server Actions CRUD)
   robots.ts, sitemap.ts SEO
 components/             UI (header, menu, formulaire, footer…)
 lib/
-  site.ts               contenu du site (plats, prix, horaires, avis)
-  schema.ts             schéma Drizzle (table orders)
+  site.ts               contenu fixe + menu de secours (plats, horaires, avis)
+  menu.ts               lecture de la carte en base + photos disponibles
+  schema.ts             schéma Drizzle (tables orders et dishes)
   db.ts                 connexion Neon paresseuse
   admin-auth.ts         session admin signée (cookie HTTP-only)
 drizzle/                migrations SQL

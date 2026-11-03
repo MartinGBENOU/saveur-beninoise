@@ -2,8 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import { getDb } from '@/lib/db'
+import { getDishBySlug } from '@/lib/menu'
 import { orders } from '@/lib/schema'
-import { dishes, formatFCFA, whatsappLink } from '@/lib/site'
+import { formatFCFA, whatsappLink } from '@/lib/site'
 
 const PHONE_PATTERN = /^\+?[0-9][0-9\s.-]{6,19}$/
 
@@ -15,12 +16,13 @@ function readText(formData: FormData, key: string) {
 export async function createOrder(_previousState: { error: string } | null, formData: FormData) {
   const customerName = readText(formData, 'name')
   const phone = readText(formData, 'phone')
-  const dishName = readText(formData, 'dish')
+  const dishSlug = readText(formData, 'dish')
   const address = readText(formData, 'address')
   const notes = readText(formData, 'notes')
   const quantity = Number.parseInt(readText(formData, 'quantity'), 10)
 
-  const dish = dishes.find((item) => item.name === dishName)
+  // Le prix est toujours relu en base : un visiteur ne peut pas le modifier.
+  const dish = await getDishBySlug(dishSlug)
 
   if (customerName.length < 2 || customerName.length > 80) {
     return { error: 'Indiquez votre nom (2 à 80 caractères).' }
@@ -28,8 +30,8 @@ export async function createOrder(_previousState: { error: string } | null, form
   if (!PHONE_PATTERN.test(phone)) {
     return { error: 'Indiquez un numéro de téléphone valide (ex. 01 99 56 11 44).' }
   }
-  if (!dish) {
-    return { error: 'Choisissez un plat dans la liste.' }
+  if (!dish || !dish.available) {
+    return { error: "Ce plat n'est plus disponible. Choisissez-en un autre ou écrivez-nous sur WhatsApp." }
   }
   if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
     return { error: 'La quantité doit être comprise entre 1 et 20.' }

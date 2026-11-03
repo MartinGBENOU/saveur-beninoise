@@ -8,6 +8,7 @@ export function whatsappLink(message = 'Bonjour Saveur Béninoise ! Je souhaite 
 }
 
 export type Dish = {
+  slug: string
   name: string
   description: string
   price: number
@@ -15,8 +16,13 @@ export type Dish = {
   tag?: string
 }
 
-export const dishes: Dish[] = [
+/**
+ * Menu de secours : utilisé tant que la base est vide ou injoignable.
+ * En production, la carte vient de la table `dishes` et se modifie depuis /admin/menu.
+ */
+export const defaultDishes: Dish[] = [
   {
+    slug: 'poulet-braise',
     name: 'Poulet Braisé',
     description: 'Poulet bicyclette mariné 12h, grillé au feu de bois, oignons et piment frais.',
     price: 3500,
@@ -24,12 +30,14 @@ export const dishes: Dish[] = [
     tag: 'N°1 des ventes',
   },
   {
+    slug: 'amiwo-au-poulet',
     name: 'Amiwo au Poulet',
     description: 'Pâte rouge de maïs parfumée à la tomate, poulet frit et sauce pimentée maison.',
     price: 3000,
     image: '/images/amiwo.webp',
   },
   {
+    slug: 'alloco-et-poisson',
     name: 'Alloco & Poisson',
     description: 'Bananes plantains dorées, poisson grillé et notre sauce piment secrète.',
     price: 2500,
@@ -37,18 +45,21 @@ export const dishes: Dish[] = [
     tag: 'Coup de cœur',
   },
   {
+    slug: 'pate-sauce-arachide',
     name: 'Pâte & Sauce Arachide',
     description: 'Pâte blanche onctueuse, sauce arachide mijotée au bœuf tendre.',
     price: 2500,
     image: '/images/sauce-arachide.webp',
   },
   {
+    slug: 'brochettes-de-boeuf',
     name: 'Brochettes de Bœuf',
     description: 'Bœuf épicé au kankankan, grillé à la braise, servi avec oignons crus.',
     price: 2000,
     image: '/images/brochettes.webp',
   },
   {
+    slug: 'poisson-braise',
     name: 'Poisson Braisé',
     description: 'Tilapia entier braisé, tomates fraîches, oignons et attiéké.',
     price: 4500,

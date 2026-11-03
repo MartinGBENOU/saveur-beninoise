@@ -3,22 +3,23 @@
 import { useActionState, useState } from 'react'
 import { Loader2, ShoppingBag } from 'lucide-react'
 import { createOrder } from '@/app/commander/actions'
-import { dishes, formatFCFA } from '@/lib/site'
+import type { MenuDish } from '@/lib/menu'
+import { formatFCFA } from '@/lib/site'
 
 const fieldClass =
   'mt-2 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary/30'
 
 const labelClass = 'block text-sm font-medium text-muted-foreground'
 
-export function OrderForm({ initialDish }: { initialDish: string }) {
+export function OrderForm({ dishes, initialDish }: { dishes: MenuDish[]; initialDish: string }) {
   const [state, formAction, pending] = useActionState(createOrder, null)
-  const [dishName, setDishName] = useState(
-    dishes.some((dish) => dish.name === initialDish) ? initialDish : dishes[0].name,
+  const [dishSlug, setDishSlug] = useState(
+    dishes.some((dish) => dish.slug === initialDish) ? initialDish : (dishes[0]?.slug ?? ''),
   )
   const [quantity, setQuantity] = useState(1)
 
-  const selected = dishes.find((dish) => dish.name === dishName) ?? dishes[0]
-  const total = selected.price * quantity
+  const selected = dishes.find((dish) => dish.slug === dishSlug) ?? dishes[0]
+  const total = (selected?.price ?? 0) * quantity
 
   return (
     <form action={formAction} className="rounded-[2rem] border border-white/[0.07] bg-card p-6 shadow-2xl shadow-black/40 md:p-9">
@@ -30,12 +31,12 @@ export function OrderForm({ initialDish }: { initialDish: string }) {
           <select
             id="dish"
             name="dish"
-            value={dishName}
-            onChange={(event) => setDishName(event.target.value)}
+            value={dishSlug}
+            onChange={(event) => setDishSlug(event.target.value)}
             className={fieldClass}
           >
             {dishes.map((dish) => (
-              <option key={dish.name} value={dish.name} className="bg-card text-foreground">
+              <option key={dish.slug} value={dish.slug} className="bg-card text-foreground">
                 {dish.name} — {formatFCFA(dish.price)}
               </option>
             ))}

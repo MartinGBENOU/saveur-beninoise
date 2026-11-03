@@ -4,7 +4,8 @@ import { ArrowLeft } from 'lucide-react'
 import { OrderForm } from '@/components/order-form'
 import { FloatingWhatsApp } from '@/components/floating-whatsapp'
 import { SiteHeader } from '@/components/site-header'
-import { dishes, formatFCFA } from '@/lib/site'
+import { getMenu } from '@/lib/menu'
+import { formatFCFA, whatsappLink } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Commander — Saveur Béninoise',
@@ -20,8 +21,11 @@ export default async function CommanderPage({
   searchParams: Promise<{ plat?: string }>
 }) {
   const { plat } = await searchParams
-  const initialDish = typeof plat === 'string' ? plat : ''
-  const featured = dishes.find((dish) => dish.name === initialDish) ?? dishes[0]
+  const menu = await getMenu()
+
+  const requested = typeof plat === 'string' ? plat : ''
+  const featured = menu.find((dish) => dish.slug === requested) ?? menu[0]
+  const initialDish = featured?.slug ?? ''
 
   return (
     <>
@@ -48,12 +52,14 @@ export default async function CommanderPage({
                 WhatsApp pour confirmation. Livraison chaude en 30 minutes à Cotonou.
               </p>
 
-              <div className="mt-8 rounded-3xl border border-white/[0.07] bg-card p-6 shadow-2xl shadow-black/40">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Votre sélection</p>
-                <p className="mt-3 font-display text-2xl font-semibold">{featured.name}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{featured.description}</p>
-                <p className="mt-4 font-display text-xl font-semibold text-primary">{formatFCFA(featured.price)}</p>
-              </div>
+              {featured && (
+                <div className="mt-8 rounded-3xl border border-white/[0.07] bg-card p-6 shadow-2xl shadow-black/40">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Votre sélection</p>
+                  <p className="mt-3 font-display text-2xl font-semibold">{featured.name}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{featured.description}</p>
+                  <p className="mt-4 font-display text-xl font-semibold text-primary">{formatFCFA(featured.price)}</p>
+                </div>
+              )}
 
               <p className="mt-6 text-sm text-muted-foreground">
                 Une question ? Appelez-nous au{' '}
@@ -64,7 +70,23 @@ export default async function CommanderPage({
               </p>
             </div>
 
-            <OrderForm initialDish={initialDish} />
+            {menu.length > 0 ? (
+              <OrderForm dishes={menu} initialDish={initialDish} />
+            ) : (
+              <div className="rounded-[2rem] border border-white/[0.07] bg-card p-8 text-center shadow-2xl shadow-black/40">
+                <p className="font-display text-2xl font-semibold">La carte est en cours de mise à jour</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  Nous préparons de nouvelles recettes. Écrivez-nous sur WhatsApp : nous vous indiquons tout de suite
+                  ce qui est disponible aujourd&apos;hui.
+                </p>
+                <a
+                  href={whatsappLink()}
+                  className="mt-6 inline-flex items-center justify-center rounded-full bg-whatsapp px-6 py-3 text-sm font-semibold text-whatsapp-foreground transition-transform hover:-translate-y-0.5"
+                >
+                  Nous écrire sur WhatsApp
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </main>

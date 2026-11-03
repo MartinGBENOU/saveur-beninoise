@@ -4,11 +4,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { Plus } from 'lucide-react'
-import { dishes, formatFCFA, type Dish } from '@/lib/site'
+import { formatFCFA } from '@/lib/site'
+import type { MenuDish } from '@/lib/menu'
 import { SectionHeading } from './section-heading'
 import { WhatsAppButton } from './whatsapp-button'
 
-function DishCard({ dish, index }: { dish: Dish; index: number }) {
+function DishCard({ dish, index }: { dish: MenuDish; index: number }) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 40 }}
@@ -44,7 +45,7 @@ function DishCard({ dish, index }: { dish: Dish; index: number }) {
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{dish.description}</p>
 
         <Link
-          href={`/commander?plat=${encodeURIComponent(dish.name)}`}
+          href={`/commander?plat=${encodeURIComponent(dish.slug)}`}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-3 text-sm font-semibold transition-all hover:border-whatsapp hover:bg-whatsapp hover:text-whatsapp-foreground"
           aria-label={`Commander ce plat : ${dish.name}`}
         >
@@ -56,7 +57,12 @@ function DishCard({ dish, index }: { dish: Dish; index: number }) {
   )
 }
 
-export function MenuSection() {
+export function MenuSection({ dishes }: { dishes: MenuDish[] }) {
+  const description =
+    dishes.length > 1
+      ? `${dishes.length} recettes signatures, préparées chaque jour avec des produits frais du marché Dantokpa.`
+      : 'Nos recettes signatures, préparées chaque jour avec des produits frais du marché Dantokpa.'
+
   return (
     <section id="menu" aria-labelledby="menu-title" className="relative scroll-mt-24 py-24 md:py-32">
       <div
@@ -72,14 +78,21 @@ export function MenuSection() {
               Les plats qu&apos;on <span className="italic text-primary">s&apos;arrache</span>
             </>
           }
-          description="Six recettes signatures, préparées chaque jour avec des produits frais du marché Dantokpa."
+          description={description}
         />
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {dishes.map((dish, i) => (
-            <DishCard key={dish.name} dish={dish} index={i} />
-          ))}
-        </div>
+        {dishes.length === 0 ? (
+          <p className="mx-auto max-w-xl rounded-3xl border border-white/[0.07] bg-card px-6 py-10 text-center text-muted-foreground">
+            La carte est en cours de mise à jour. Écrivez-nous sur WhatsApp, nous vous disons ce qui est disponible
+            aujourd&apos;hui.
+          </p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {dishes.map((dish, i) => (
+              <DishCard key={dish.slug} dish={dish} index={i} />
+            ))}
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
