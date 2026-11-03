@@ -43,8 +43,13 @@ export function SiteHeader({ content }: { content: SiteContent }) {
     // Sur l'accueil, on défile directement sans recharger la page.
     if (pathname !== '/') return
     event.preventDefault()
-    const element = document.getElementById(id)
-    if (element) element.scrollIntoView({ block: 'start', behavior: 'instant' })
+    const scroll = () => {
+      const element = document.getElementById(id)
+      if (element) element.scrollIntoView({ block: 'start', behavior: 'instant' })
+    }
+    scroll()
+    window.setTimeout(scroll, 120)
+    window.setTimeout(scroll, 400)
     window.history.replaceState(null, '', `#${id}`)
   }
 
